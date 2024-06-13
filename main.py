@@ -1,5 +1,10 @@
 from player import Player
 from floor import Floor
+from camera import CameraGroup
+
+from utils import *
+
+from level1 import *
 
 import pygame as pg
 pg.init()
@@ -9,10 +14,10 @@ dim = widht, hight = 500, 500
 clock = pg.time.Clock()
 screen = pg.display.set_mode(dim)
 
-player = Player(screen,10,10)
-floor = Floor(screen,dim)
 
-gravidade = 5
+camera = CameraGroup()
+
+player = Player(50, 50)
 
 running = True
 while running:
@@ -22,27 +27,29 @@ while running:
     for event in pg.event.get():
         if event.type == pg.QUIT:
             running = False
-        elif event.type == pg.KEYDOWN:
-            if event.key == pg.K_UP:
-                player.setVely(-40)
 
-    if pg.key.get_pressed()[pg.K_LEFT]:
-        player.setVelx(-5)
-    if pg.key.get_pressed()[pg.K_RIGHT]:
-        player.setVelx(5)
+    camera.empty()
+    camera.add(player)
 
-    player.update()
+    for s in floorGroup:
+        if (camera.isOnCamera(s.rect)):
+            camera.add(s)
 
-    if (floor.checkColision(player.getHitBox())):
-        player.setVely(0)
+    for b in backgroundGroup:
+        if (camera.isOnCamera(b.rect)):
+            camera.add(b)
+
+    camera.update()
+
+    for f in floorGroup:
+    
+        if (player.checkCollision(f.getRect())):
+            player.setVely(0)
+            player.setY(f.getY())
     else:
         player.addVely(gravidade)
 
-    if (player.getVelx() != 0):
-        player.addVelx(player.getVelx()/abs(player.getVelx()) * -1 * 0.2)
-
-    floor.draw()
-    player.draw()
+    camera.draw(player)
 
     pg.display.flip()
     clock.tick(60)

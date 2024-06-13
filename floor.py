@@ -1,19 +1,21 @@
 import pygame as pg
+import random as rd
 
-class Floor:
+class Floor(pg.sprite.Sprite):
 
-    def __init__(self, screen, dim):
+    def __init__(self, x, y, w, h):
+        super().__init__()
 
-        self.screen = screen
-        self.dim = dim
-        self.w = self.dim[0]
-        self.h = 50
-        self.y = self.dim[1] - self.h
+        self.image = pg.Surface((w, h))
+        self.image.fill((0,255,0))
+        # self.image = pg.image.load("floor.jpg")
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x,y)
 
-    def checkColision(self, hitbox):
+    def getRect(self):
 
-        return hitbox[1] + hitbox[3] >= self.y
+        return self.rect
+    
+    def getY(self):
 
-    def draw(self):
-
-        pg.draw.rect(self.screen, (0,255,0), (0, self.y, self.w, self.h))
+        return self.rect.y - self.rect.h
