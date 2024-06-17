@@ -13,6 +13,7 @@ class Player(pg.sprite.Sprite):
         self.rect.center = (x,y)
         self.direction = pg.math.Vector2()
         self.speed = 1
+        self.powerup = 0
 
         self.velx = 0
         self.vely = 0
@@ -24,86 +25,40 @@ class Player(pg.sprite.Sprite):
         keys = pg.key.get_pressed()
 
         if keys[pg.K_LEFT]:
-            self.setVelx(-5)
+            self.velx = -10
         if keys[pg.K_RIGHT]:
-            self.setVelx(5)
+            self.velx = 10
         if keys[pg.K_UP]:
             if not (self.jumping):
-                self.setVely(-50)
+                self.vely += -75
                 self.jumping = True
 
     def checkCollision(self, r):
 
-        if (self.rect.colliderect(r)):
-            self.jumping = False
-            return True
-
-        return False
-
-    def getRect(self):
-
-        return self.rect
-
-    def setVelx(self, dx):
-
-        self.velx = dx
-
-    def setVely(self, dy):
-
-        self.vely = dy
-
-    def getVelx(self):
+        cx = pg.Rect(self.rect.x + self.velx, self.rect.y, self.rect.w, self.rect.h).colliderect(r)
+        cy = pg.Rect(self.rect.x, self.rect.y + self.vely, self.rect.w, self.rect.h).colliderect(r)
         
-        return self.velx
+        if (self.velx >= 0 and cx and (self.rect.top >= r.top or self.rect.bottom <= r.bottom)):
+            return 1
+        elif (self.velx < 0 and cx and (self.rect.top >= r.top or self.rect.bottom <= r.bottom)):
+            return 2
+        elif (self.vely >= 0 and cy and self.rect.bottom <= r.top):
+            return 0
+        elif (self.vely < 0 and cy and self.rect.top >= r.bottom):
+            return 3
 
-    def getVely(self):
-
-        return self.vely
-
-    def addVelx(self, dx):
-
-        self.velx += dx
-
-    def addVely(self, dy):
-
-        self.vely += dy
-
-    def setX(self, nx):
-
-        self.rect.x = nx
-
-    def setY(self, ny):
-
-        self.rect.y = ny
-
-    def getX(self):
-
-        return self.rect.x
-    
-    def getY(self):
-
-        return self.rect.y
-
-    def moveX(self, dx):
-
-        self.rect.x += dx
-
-    def moveY(self, dy):
-
-        self.rect.y += dy
+        return -1
 
     def update(self):
     
-        self.inputs()
+        if (self.velx != 0):
+            self.velx += self.velx / abs(self.velx) * -1 * 0.4
 
-        if (self.getVelx() != 0):
-            self.addVelx(self.getVelx()/abs(self.getVelx()) * -1 * 0.2)
+        if (abs(self.velx) < 1): # to stop
+            self.velx = 0
 
-        if (self.rect.x + self.velx < 0):
+        if (self.rect.x + self.velx < 0): # not to go out of bounds
             self.rect.x = 0
             self.velx = 0
 
         self.rect.move_ip(self.velx, self.vely)
-
-        if (abs(self.velx) < 1):
-            self.velx = 0

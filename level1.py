@@ -9,7 +9,15 @@ backgroundGroup = pg.sprite.Group()
 floorGroup = pg.sprite.Group()
 
 for i in range(5):
-    floorGroup.add(Floor(dim[0] * i, dim[1]-50, dim[0], 50))
     backgroundGroup.add(Background(dim, i))
 
-floorGroup.add(Floor(100,300,100,50))
+for i in range(5):
+    for j in range(10):
+        floorGroup.add(Floor(dim[0] * i + dim[0] / 10 * j, dim[1]-50))
+
+
+floorGroup.add(Floor(200,400))
+floorGroup.add(Floor(200,350))
+floorGroup.add(Floor(200,300))
+
+print("DONE")

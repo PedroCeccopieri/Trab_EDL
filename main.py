@@ -39,19 +39,10 @@ while running:
         if (camera.isOnCamera(b.rect)):
             camera.add(b)
 
-    camera.update()
-
-    for f in floorGroup:
-    
-        if (player.checkCollision(f.getRect())):
-            player.setVely(0)
-            player.setY(f.getY())
-    else:
-        player.addVely(gravidade)
-
+    camera.update(gravidade)
     camera.draw(player)
 
     pg.display.flip()
-    clock.tick(60)
+    clock.tick(30)
 
 pg.quit()

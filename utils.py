@@ -1,1 +1,1 @@
-gravidade = 5
+gravidade = 10
