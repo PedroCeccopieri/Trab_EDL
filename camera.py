@@ -1,8 +1,12 @@
 import pygame as pg
 
-from floor import Floor
-from background import Background
-from player import Player
+from src.visuals.background import Background
+
+from src.blocks.block import Block
+from src.entities.player import Player
+from src.entities.enemy import Enemy
+
+from src.blocks.finishLine import FinishLine
 
 class CameraGroup(pg.sprite.Group):
 
@@ -16,7 +20,7 @@ class CameraGroup(pg.sprite.Group):
 
     def isOnCamera(self, r):
 
-        return pg.Rect(self.display_surface.get_rect().topleft + self.offset, (500, 500)).colliderect(r)
+        return pg.Rect(self.display_surface.get_rect().topleft + self.offset, self.display_surface.get_size()).colliderect(r)
 
     def center_target_camera(self,target):
         if not (target.rect.centerx - self.half_w < 0):
@@ -33,42 +37,72 @@ class CameraGroup(pg.sprite.Group):
         sprites = []
 
         sprites += [i for i in self.sprites() if (isinstance(i, Background))]
-        sprites += [i for i in self.sprites() if (isinstance(i, Floor))]
+        sprites += [i for i in self.sprites() if (isinstance(i, Block))]
+        sprites += [i for i in self.sprites() if (isinstance(i, Enemy))]
         sprites += [i for i in self.sprites() if (isinstance(i, Player))]
 
-        # sprites += list(filter(lambda x: isinstance(x, Background), self.sprites()))
-        # sprites += list(filter(lambda x: isinstance(x, Floor), self.sprites()))
-        # sprites += list(filter(lambda x: isinstance(x, Player), self.sprites()))
-
         for sprite in sprites:
-            offset_pos = sprite.rect.topleft - self.offset
-            self.display_surface.blit(sprite.image, offset_pos)
+            sprite.draw(self.display_surface, self.offset)
 
     def update(self, gravidade):
 
         player = [i for i in self.sprites() if (isinstance(i, Player))][0]
-        floors = [i for i in self.sprites() if (isinstance(i, Floor))]
+        blocks = [i for i in self.sprites() if (isinstance(i, Block))]
+        enemys = [i for i in self.sprites() if (isinstance(i, Enemy))]
 
         player.inputs()
 
-        for f in floors:
+        if not (player.died):
+        
+            for b in blocks:
 
-            d = player.checkCollision(f.rect)
+                d = player.checkCollision(b.rect, b.borders)
+                
+                if not (isinstance(b,FinishLine)):
 
-            if (d >= 0):
-                if (d == 0):
-                    player.vely = 0
-                    player.rect.bottom = f.rect.top - gravidade
-                    player.jumping = False
-                elif (d == 3):
-                    player.vely = 0
-                    player.rect.top = f.rect.bottom - gravidade
-                elif (d == 1):
-                    player.velx = 0
-                    player.rect.right = f.rect.left
-                elif (d == 2):
-                    player.velx = 0
-                    player.rect.left = f.rect.right
+                    match d:
+                        case 0:
+                            player.vely = 0
+                            player.rect.bottom = b.rect.top - gravidade
+                            player.jumping = False
+                        case 3:
+                            player.vely = 0
+                            player.rect.top = b.rect.bottom - gravidade
+                        case 1:
+                            player.velx = 0
+                            player.rect.right = b.rect.left
+                        case 2:
+                            player.velx = 0
+                            player.rect.left = b.rect.right
+
+                else:
+
+                    if (d > 0):
+                        player.finished = True
+
+            for e in enemys:
+
+                t = player.checkCollision(e.enemyRect, [0,1,2,3])
+                v = player.checkCollision(e.attackRect, [0,1,2,3])
+                
+                match t:
+
+                    case -1:
+                        pass
+
+                    case 0:
+                        player.vely = -40
+                        e.kill()
+
+                    case _:
+                        player.die()
+
+                match v:
+
+                    case -1:
+                        pass
+                    case _:
+                        player.die()
 
         player.vely += gravidade
 
